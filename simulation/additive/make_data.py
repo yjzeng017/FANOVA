@@ -33,12 +33,13 @@ def file_name(cov, param):
 
 
 # User must specify the root path.
-# The path 'root_path + 'simulation/additive/data/' ' is used to store the simulation data.
-# Please ensure the dictionary '/data' exists.
-
 root_path = '/Users/yjzeng/Desktop/FANOVA/github_code/'
 
-
+# The path 'root_path + 'simulation/additive/data/' ' is used to store the simulation data.
+# Please ensure the dictionary '/data' exists.
+isExists = os.path.exists(root_path+'simulation/additive/data/')
+if not isExists:
+    os.makedirs(root_path +'simulation/additive/data/')
 
 
 if __name__ == '__main__':
