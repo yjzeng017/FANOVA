@@ -29,11 +29,11 @@ file_name = function(cov, param){
 covs = c("CompSymm", "AR(1)")
 t = c(0, 1, 3)
 rho = c(-0.5, 0, 0.5)
-method = c('MARS', 'COSSO', 'ACOSSO')
+method = c('MARS', 'COSSO', 'ACOSSO','BSSANOVA')
 # BSSANOVA will take more time. When running testing, BSSANOVA could be excluded.
 n = 100 
 p = 10
-npar = 10 # User can run less replicated simulations for testing.
+npar = 100 # User can run less replicated simulations for testing.
 
 
 # open a .txt file
