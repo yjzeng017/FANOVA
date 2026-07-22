@@ -70,7 +70,7 @@ def one_fit(i, method, X_train, Y_train, X_test, Y_test):
 
 
 n_cores = 8
-n_replications = 5 # User can run less replicated simulations for testing.
+n_replications = 100 # User can run less replicated simulations for testing.
 
 
 if __name__ == '__main__':
