@@ -87,7 +87,7 @@ def one_fit(j, method, omega):
 # Do 10-fold cross-validation ten times, then len(splits)=100.
 # Users can set a smaller value for rep when testing.
 rep = len(splits)
-omega_list = np.arange(2, 11, 1)
+omega_list = [2] # np.arange(2, 11, 1)
 n_cores=8
 
 
