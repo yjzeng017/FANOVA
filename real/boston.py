@@ -1,3 +1,5 @@
+#-
+import io
 import os
 import numpy as np
 import pandas as pd
@@ -8,9 +10,7 @@ from FANOVAModels.SSANOVA import SSANOVAModel
 from concurrent.futures import ProcessPoolExecutor
 from tqdm import tqdm
 import contextlib
-import io
 from sklearn.preprocessing import MinMaxScaler
-
 
 
 # User should specify the path.
@@ -26,22 +26,18 @@ if not isExists:
     os.makedirs(result_path)
 
 
-
-df = pd.read_csv(data_path+'ozone.data', sep=',',header=0)
-splits = pickle.load(open(splits_path+"ozone_splits.pkl", "rb"))
-
-df.columns = ["O3" ,"vh", "wind", "humidity", "temp", "ibh",  "dpg",  "ibt",  "vis",  "doy"]
-
-df = df.drop(columns=['doy'])
+splits = pickle.load(open(splits_path + "boston_splits.pkl", "rb"))
+df = pd.read_csv(data_path +'boston.data', sep=',',header=0)
+df = df.drop(columns=['town', 'tract', 'medv', 'chas', "lon", "lat",])
 df = df.reset_index(drop=True)
-exclude_cols = ['O3']
+
+exclude_cols = ['cmedv']
 cols_to_scale = [col for col in df.columns if col not in exclude_cols]
 scaler = MinMaxScaler(feature_range=(0, 1))
 df[cols_to_scale] = scaler.fit_transform(df[cols_to_scale])
 # Define the features by dropping both target variables
-X_scaled = np.array(df.drop(columns=['O3']))
-Y = np.array(df['O3'])
-
+X_scaled = np.array(df.drop(columns=['cmedv']))
+Y = np.array(df['cmedv'])
 
 
 def one_fit(j, method, omega):
@@ -64,7 +60,7 @@ def one_fit(j, method, omega):
                 Y=Y_train.reshape(N_train, 1),
                 max_interaction_depth=2,
             )
-            model.fit(delta=0.001/np.log(N_train), omega=omega/(N_train+2), verbose=True)
+            model.fit(delta=0.001/np.log(N_train), omega=omega/(N_train+2), max_iter=100, verbose=True)
         # evaluation
         Y_test_pred = model.predict(X_test)
         ISE = np.mean((Y_test - Y_test_pred) ** 2)
@@ -84,6 +80,7 @@ def one_fit(j, method, omega):
     }
 
 
+
 # Do 10-fold cross-validation ten times, then len(splits)=100.
 # Users can set a smaller value for rep when testing.
 rep = len(splits)
@@ -93,18 +90,17 @@ n_cores=8
 
 if __name__ == "__main__":
     for method in ['GPANOVA', 'SSANOVA']:
-        f = open(root_path + f'real/ozone_{method}_results.txt', 'w')
+        f = open(root_path + f'real/boston_{method}_results.txt', 'w')
         f.write("========================================================\n")
         f.write(
-            "ozone data: interaction model evaluated based on 10-fold CV for {0} repetitions".format(rep / 10) + "\n")
+            "boston data: interaction model evaluated based on 10-fold CV for {0} repetitions".format(rep / 10) + "\n")
         f.write("========================================================\n")
-
         for omega in omega_list:
-            print(f"Method = {method}, omega={omega}/(n+2).")
+            print(f"Method = {method}, omega={omega}/(n+2)")
             train_with_fixed_method = partial(one_fit, method=method, omega=omega)
             with ProcessPoolExecutor(max_workers=n_cores) as executor:
                 results = list(tqdm(executor.map(train_with_fixed_method, range(rep)), total=rep))
-            pickle.dump(results, open(result_path+f"ozone_{method}_w_{omega}_10cv_results.pkl", 'wb'))
+            pickle.dump(results, open(result_path + f"boston_{method}_w_{omega}_10cv_results.pkl", 'wb'))
             ISE = np.array([[value for key, value in c.items() if key == 'ISE'] for c in results])
             effect_freq = np.array([[value for key, value in c.items() if key == 'effect_freq'] for c in results])
             model_size = np.array([[value for key, value in c.items() if key == 'model_size'] for c in results]).flatten()
@@ -112,12 +108,12 @@ if __name__ == "__main__":
             effect_corr = np.array([[value for key, value in c.items() if key == 'effect_corr'] for c in results])
             sobol_indice = np.array([[value for key, value in c.items() if key == 'sobol_indice'] for c in results])
 
-            f.write(f"Method = {method}, omega = {omega}/(N+2)\n")
+            f.write(f"Method = {method}, omega={omega}/(N+2)\n")
             f.write('Risk:' + '& Ave.ISE' + '& Med.ISE' + '& Sd.ISE' + '\n')
-            f.write(' & ' + str(round(ISE.mean(), 3)) + ' & ' + str(round(np.nanmedian(ISE), 3)) + ' & ' + str(
+            f.write('& ' + str(round(ISE.mean(), 3)) + ' & ' + str(round(np.nanmedian(ISE), 3)) + ' & ' + str(
                 round(ISE.std() / np.sqrt(rep), 3)) + '\n')
             f.write(' & Ave.Size' + ' & Med.Size' + ' & Sd.Size' +  ' & Range'+ '\n')
-            f.write(' & ' + str(round(mean_size, 3)) + ' & ' + str(round(median_size, 3)) + ' & ' + str(
+            f.write(' & ' + str(round(mean_size, 3)) + ' & ' + str(round(median_size, 3)) + '& ' + str(
                 round(std_size / np.sqrt(rep), 3)) + ' & [' + str(min_size) + ',' + str(max_size) + ']' + '\n')
 
             f.write(' -The frequency of effects- \n')
