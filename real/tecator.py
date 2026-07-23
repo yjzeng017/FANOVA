@@ -18,7 +18,7 @@ root_path = '/Users/yjzeng/Desktop/FANOVA/github_code/'
 # The real datasets were stored in: root_path + 'real/datasets/'
 data_path = root_path + 'real/datasets/'
 # The splits were stored in: root_path + 'real/splits/'
-splits_path = root_path + 'real/splits/'
+split_path = root_path + 'real/splits/'
 # The results will be stored in: root_path + 'real/results/', make sure this dictionary has been created.
 result_path = root_path + 'real/results/'
 isExists = os.path.exists(result_path)
@@ -26,7 +26,7 @@ if not isExists:
     os.makedirs(result_path)
 
 
-splits = pickle.load(open(splits_path + "tecator_splits.pkl", "rb"))
+splits = pickle.load(open(split_path + "tecator_splits.pkl", "rb"))
 df = pd.read_csv(data_path + 'tecator.data', sep=',', header=0)
 
 X_raw = df.iloc[:, :100]

@@ -18,7 +18,7 @@ root_path = '/Users/yjzeng/Desktop/FANOVA/github_code/'
 # The real datasets were stored in: root_path + 'real/datasets/'
 data_path = root_path + 'real/datasets/'
 # The splits were stored in: root_path + 'real/splits/'
-splits_path = root_path + 'real/splits/'
+split_path = root_path + 'real/splits/'
 # The results will be stored in: root_path + 'real/results/', make sure this dictionary has been created.
 result_path = root_path + 'real/results/'
 isExists = os.path.exists(result_path)
@@ -26,7 +26,7 @@ if not isExists:
     os.makedirs(result_path)
 
 
-splits = pickle.load(open(splits_path + "boston_splits.pkl", "rb"))
+splits = pickle.load(open(split_path + "boston_splits.pkl", "rb"))
 df = pd.read_csv(data_path +'boston.data', sep=',',header=0)
 df = df.drop(columns=['town', 'tract', 'medv', 'chas', "lon", "lat",])
 df = df.reset_index(drop=True)
@@ -83,9 +83,9 @@ def one_fit(j, method, omega):
 
 # Do 10-fold cross-validation ten times, then len(splits)=100.
 # Users can set a smaller value for rep when testing.
-rep = len(splits)
+rep =  len(splits)
 omega_list = [2] # np.arange(2, 11, 1)
-n_cores=8
+n_cores = 8
 
 
 if __name__ == "__main__":
